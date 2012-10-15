@@ -1,0 +1,76 @@
+1st Prototype Build - 10/7/2012
+
+Prototype application for monitoring very basic performance statistics (CPU and memory utilization)
+from Xen guests.
+
+Our prototype actually is built on libvirt, and in theory generalizes to any hypervisor.
+
+The current implementation creates a static set of monitors for all currently executing guests,
+including domain0, and prints updates to the terminal.  In this capacity, it's not much more
+useful than "xentop" or "virsh".  We begin with this in hopes of providing a framework that we
+can integrate into an EVPath application, which will ultimately allow us to collect and aggregate
+data from all machines in an OpenStack-deployed datacenter.
+
+Our next milestone will extend the prototype to send performance statistics as "events" via an
+EVPath overlay.  We also plan to develop an OpenStack dashboard extension that can visualize this
+data.
+
+To build, just run "make" (the makefile is utterly simplistic - I am not a GNU Make guru, and
+didn't have time to setup autotools for this prototype...)
+
+To run:
+    sudo ./basic_monitor
+
+(you need to be root to access the hypervisor).
+
+Test Environment Setup
+----------------------
+Our test environment is jedi020.cc.gatech.edu.  We built a very small guest VM based on CirrOS
+to deploy as a domU guest.  It's config file is included with this distribution.  The basic 
+idea is (note: our test system had an existing logical volume setup under /dev/vg0):
+    1. create a virtual disk:
+            lvcreate -L 1G cirros-small
+       check to make sure it got built with "lvdisplay"
+    2. create a filesystem:
+            mkfs.ext3 /dev/vg0/cirros-small
+    3. mount it:
+            mkdir /tmp/cirros_mnt
+            mount /dev/vg0/cirros-small /tmp/cirros_mnt
+    4. mount the CirrOS disk image:
+            mkdir /tmp/cirros_img
+            mount -o loop,ro cirros-rootfs.img /tmp/cirros_img
+    5. copy CirrOS onto the virtual disk:
+            rsync -a /tmp/cirros_img/. /tmp/cirros_mnt
+    6. create a directory on the local filesystem for storing the CirrOS kernal and initrd.
+       this is required because we are booting a paravirtualized guest without running through
+       any sort of installation process (e.g. we don't use pygrub or any other tools to setup
+       a bootloader on the virtual disk):
+            mkdir /path/to/xen/stuff/cirros
+            cp /tmp/cirros_img/*initrd* /tmp/cirros_img/*vmlinuz* /path/to/xen/stuff/cirros
+    7. unmount everything
+            umount /tmp/cirros_mnt
+            umount /tmp/cirros_img
+    8. modify the included "cirros-xen.cfg" Xen configuration file to use the above paths.
+       Specifically, the "disk = ..." line should point to the logical disk just created, and
+       the "kernel = ..." and "ramdisk = ..." lines must use /path/to/xen/stuff/cirros...
+    9. Launch away!
+            xm create cirros-xen.cfg -c
+       the -c causes Xen to take over your terminal, so you can login to the VM (do it in
+       another terminal maybe).  Note that CirrOS does something with the network on bootup,
+       which takes about 30 seconds to timeout (since we haven't configured virtual networking here).
+
+Basic Stresstest
+----------------
+Included is an extremely simple program (see src/eat_memory.c) to try to stress a guest to
+demonstrate the monitoring app.  It can be run in either dom0 or a domU (note: to get it to
+run on domU, you'd need to copy it into the virtual disk somehow).
+
+This test allocates a chunk of memory, writes random data to it, then sleeps for 1 second,
+repeating until the specified time has elapsed.  This is a simple way to stress both the 
+CPU utilization (because writes occur in a busy loop) and memory allocation (because 
+the user can specify a large chunk of memory to malloc) in a guest VM.
+
+We started out stressing CPU by just running "yes >/dev/null", but wrote this in an attempt
+to have something to stress the memory system as well.  In our next iteration we hope to have
+something that stresses the virtual disk as well.
+
