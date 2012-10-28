@@ -1,9 +1,17 @@
+ZMQ_PATH = /tmp/blaub6/zeromq-install
+CZMQ_PATH = /tmp/blaub6/czmq-install
+MSGPACK_PATH = /tmp/blaub6/msgpack-install
 
-ZMQ_BASE = /tmp/blaub6/zeromq-3.2.0-install
-ZMQ_INC = $(ZMQ_BASE)/include
-ZMQ_LIB = $(ZMQ_BASE)/lib
-CPPFLAGS = -I$(ZMQ_INC)
-LDFLAGS = -L$(ZMQ_LIB)
+CPPFLAGS = \
+ -I$(ZMQ_PATH)/include \
+ -I$(CZMQ_PATH)/include \
+ -I$(MSGPACK_PATH)/include
+
+LDFLAGS = \
+ -L$(ZMQ_PATH)/lib \
+ -L$(CZMQ_PATH)/lib \
+ -L$(MSGPACK_PATH)/lib
+
 LIBS = -lvirt -lrt -lzmq -lmsgpack
 
 all: basic_monitor basic_receiver eat_memory
