@@ -1,7 +1,7 @@
 #ifndef __AGGREGATE_DOMAIN_STATS_HH__
 #define __AGGREGATE_DOMAIN_STATS_HH__
 
-//#include <msgpack.hpp>
+#include <msgpack.hpp>
 #include <vector>
 
 // simple struct encapsulating a set of domain statistics
@@ -16,17 +16,22 @@ struct DomainStats
     double cpu_utilization_pct;
     double mem_utilization_pct;
 
-    //MSGPACK_DEFINE(domain_id, cpu_utilization_pct, mem_utilization_pct);
+    MSGPACK_DEFINE(domain_id, cpu_utilization_pct, mem_utilization_pct);
 };
 
 struct AggregateDomainStats
 {
     // @todo: don't think msgpack can serialize a timespec :(
     //timespec tov;
+
+    // time of this update (seconds since UNIX epoch)
     double tov;
+    // hostname of the bare-metal host machine
+    std::string hostname;
+    // virtual domain statistics for this host
     std::vector<DomainStats> domain_stats;
 
-    //MSGPACK_DEFINE(tov, domain_stats);
+    MSGPACK_DEFINE(tov, hostname, domain_stats);
 };
 
 #endif
