@@ -1,6 +1,6 @@
-ZMQ_PATH = /tmp/blaub6/zeromq-install
-CZMQ_PATH = /tmp/blaub6/czmq-install
-MSGPACK_PATH = /tmp/blaub6/msgpack-install
+ZMQ_PATH = ../external/zeromq-install
+CZMQ_PATH = ../external/czmq-install
+MSGPACK_PATH = ../external/msgpack-install
 
 CPPFLAGS = \
  -I$(ZMQ_PATH)/include \
