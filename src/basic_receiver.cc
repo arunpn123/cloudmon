@@ -30,6 +30,10 @@ int main()
     int rc = zmq_bind(subscriber, "tcp://*:12345");
     assert(rc == 0);
 
+    //TODO: debugging only...
+    void *publisher = zmq_socket(context, ZMQ_PUB);
+    zmq_bind(publisher, "tcp://*:12346");
+
     //const char *filter = "domain_stats";
     const char *filter = "monitor_data";
     rc = zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, filter, strlen(filter));
@@ -37,18 +41,34 @@ int main()
 
     while(!g_done)
     {
-        Message next;
-        next.receive(subscriber);
+        try
+        {
+            Message next;
+            next.receive(subscriber);
 
-        msgpack::unpacked msg;
-        msgpack::unpack(&msg, next.data, next.data_len);
+            //TODO: debugging only...
+            next.send(publisher);
 
-        AggregateDomainStats stats;
-        msg.get().convert(&stats);
+            msgpack::unpacked msg;
+            msgpack::unpack(&msg, next.data, next.data_len);
 
-        //print_aggregate_stats(stats);
-        print_carbon_update_lines(stats);
+            AggregateDomainStats stats;
+            msg.get().convert(&stats);
+
+            //print_aggregate_stats(stats);
+            print_carbon_update_lines(stats);
+        }
+        catch(std::exception & e)
+        {
+            std::cout << "error: " << e.what() << "\n";
+            g_done = true;
+        }
     }
+
+    std::cout << "shutting down\n";
+
+    //TODO: debugging only...
+    zmq_close(publisher);
 
     zmq_close(subscriber);
     zmq_ctx_destroy(context);

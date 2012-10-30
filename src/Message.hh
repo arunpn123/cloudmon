@@ -5,6 +5,13 @@
 #include <cstring> // for memcpy
 #include <cassert>
 #include <string>
+#include <stdexcept>
+
+struct MessageReceiveError : public std::runtime_error
+{
+    MessageReceiveError(const std::string & what) : std::runtime_error(what)
+    { }
+};
 
 struct Message
 {
@@ -50,7 +57,9 @@ struct Message
         zmq_msg_t msg_key;
         zmq_msg_init(&msg_key);
         int rc = zmq_msg_recv(&msg_key, sock, 0);
-        assert(rc != -1);
+        
+        if(rc == -1)
+            throw MessageReceiveError("error receiving msg_key");
 
         size_t size = zmq_msg_size(&msg_key);
         char * buf = new char[size + 1];
@@ -70,7 +79,9 @@ struct Message
         zmq_msg_t msg_data;
         zmq_msg_init(&msg_data);
         rc = zmq_msg_recv(&msg_data, sock, 0);
-        assert(rc != -1);
+        
+        if(rc == -1)
+            throw MessageReceiveError("error receiving msg_data");
 
         size = zmq_msg_size(&msg_data);
         data = new char[size];

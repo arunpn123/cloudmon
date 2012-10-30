@@ -35,7 +35,8 @@ int main(int argc, char **argv)
     }
 
     g_done = false;
-    
+    unsigned int update_interval = 1;
+
     signal(SIGINT, handle_interrupt);
 
     // initialize libvirt and connect to xen
@@ -58,18 +59,44 @@ int main(int argc, char **argv)
     
     // initialize zmq
     void *context = zmq_ctx_new();
-    
-    DomainStatPublisher * pub = new DomainStatPublisher(context, conn, argv[1]);
+
+    typedef std::vector<DomainStatPublisher *> PubListType;
+    PubListType pubs;
+
+    pubs.push_back(new LibvirtDomainStatPublisher(
+        context,
+        argv[1],
+        conn));
+
+    unsigned int num_fake_domains = 0;
+    for(int i = 0; i < num_fake_domains; i++)
+    {
+        pubs.push_back(new LinuxHostStatPublisher(
+            context,
+            argv[1],
+            10000 + i));
+    }
 
     while(!g_done)
     {
-        pub->update();
-        sleep(1);
+        for(PubListType::const_iterator it = pubs.begin();
+            it != pubs.end();
+            ++it)
+        {
+            (*it)->update();
+        }
+        
+        sleep(update_interval);
     }
 
     std::cout << "shutting down...\n";
 
-    delete pub;
+    for(PubListType::const_iterator it = pubs.begin();
+        it != pubs.end();
+        ++it)
+    {
+        delete *it;
+    }
 
     zmq_ctx_destroy(context);
 
