@@ -23,7 +23,8 @@ DomainStatTracker::DomainStatTracker(
 
 DomainStatTracker::~DomainStatTracker()
 {
-    std::cout << "destroying stat tracker for domain " << m_domainID << std::endl;
+    std::cout << "DomainStatTracker: destroying tracker for domain "
+              << m_domainID << "\n";
     if(m_domainInfo)
         delete m_domainInfo;
     if(m_tmpInfo)

@@ -195,7 +195,10 @@ public:
         }
 
         if(m_trackers[domID])
+        {
             delete m_trackers[domID];
+            m_trackers.erase(domID);
+        }
     }
 
 private:
