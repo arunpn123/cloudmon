@@ -17,8 +17,14 @@ DomainStatTracker::DomainStatTracker(
     if(m_domain == NULL)
         throw std::runtime_error("can't find domain with given ID");
 
+    virDomainGetUUIDString(m_domain, m_domainUUID);
+
     m_domainInfo = new virDomainInfo;
     m_tmpInfo = new virDomainInfo;
+
+    std::cout << "DomainStatTracker: monitoring domain ID "
+              << m_domainID
+              << " (" << m_domainUUID << ")\n";
 }
 
 DomainStatTracker::~DomainStatTracker()
@@ -33,6 +39,9 @@ DomainStatTracker::~DomainStatTracker()
 DomainStats DomainStatTracker::update()
 {
     DomainStats out;
+    out.domain_id = m_domainID;
+    out.domain_uuid = m_domainUUID;
+
     //virDomainInfoPtr cur_info = new virDomainInfo;
     virDomainGetInfo(m_domain, m_tmpInfo);
 
@@ -61,7 +70,6 @@ DomainStats DomainStatTracker::update()
 
     out.cpu_utilization_pct = cpu_util_pct;
     out.mem_utilization_pct = mem_util_pct;
-    out.domain_id = m_domainID;
 
     //std::cout << "domain " << m_domainID
     //          << " CPU util: " << cpu_util_pct*100 << "%; "

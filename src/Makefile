@@ -17,6 +17,7 @@ MONITOR_LIBS = $(COMMON_LIBS) -lvirt
 RECEIVER_LIBS = $(COMMON_LIBS)
 
 all: basic_monitor basic_receiver eat_memory
+.PHONY: all
 
 %.o: %.cc
 	g++ $(CPPFLAGS) $(CFLAGS) -c $< -o $@
@@ -30,5 +31,6 @@ basic_receiver: common.o basic_receiver.o
 eat_memory: eat_memory.c
 	gcc -static -o eat_memory eat_memory.c
 
+.PHONY: clean
 clean:
 	rm *.o basic_monitor basic_receiver eat_memory

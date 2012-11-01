@@ -16,6 +16,7 @@ public:
 protected:
     // @todo: use shared_ptr?
     unsigned int m_domainID;
+    char m_domainUUID[VIR_UUID_STRING_BUFLEN];
     virDomainPtr m_domain;
     virDomainInfoPtr m_domainInfo;
     // this saves a malloc on call to update()

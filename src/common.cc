@@ -30,9 +30,9 @@ void print_carbon_update_lines(const AggregateDomainStats & agg)
         snprintf(
             stat_key,
             512,
-            "servers.%s.dom%d.cpu",
+            "servers.%s.%s.cpu",
             agg.hostname.c_str(),
-            dom.domain_id);
+            dom.domain_uuid.c_str());
         snprintf(
             line,
             1024,
@@ -44,9 +44,9 @@ void print_carbon_update_lines(const AggregateDomainStats & agg)
         snprintf(
             stat_key,
             512,
-            "servers.%s.dom%d.mem",
+            "servers.%s.%s.mem",
             agg.hostname.c_str(),
-            dom.domain_id);
+            dom.domain_uuid.c_str());
         snprintf(
             line,
             1024,

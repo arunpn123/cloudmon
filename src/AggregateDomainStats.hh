@@ -1,6 +1,7 @@
 #ifndef __AGGREGATE_DOMAIN_STATS_HH__
 #define __AGGREGATE_DOMAIN_STATS_HH__
 
+#include <libvirt/libvirt.h>
 #include <msgpack.hpp>
 #include <vector>
 
@@ -12,11 +13,20 @@ struct DomainStats
     // aggregate level (e.g. not here, see AggregateDomainStats)
     // this loses precision, but simplifies "batching" a set of updates
     // with a single timestamp
+    
+    // this is the hypervisor-assigned domain ID
     int domain_id;
+    // this is the hypervisor-assigned UUID for the domain
+    std::string domain_uuid;
+
     double cpu_utilization_pct;
     double mem_utilization_pct;
 
-    MSGPACK_DEFINE(domain_id, cpu_utilization_pct, mem_utilization_pct);
+    MSGPACK_DEFINE(
+        domain_id,
+        domain_uuid,
+        cpu_utilization_pct,
+        mem_utilization_pct);
 };
 
 struct AggregateDomainStats
