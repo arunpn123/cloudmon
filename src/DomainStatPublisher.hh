@@ -100,7 +100,14 @@ public:
         msgpack::sbuffer sbuf;
         msgpack::pack(sbuf, m_aggStats);
 
-        Message m("monitor_data", sbuf.data(), sbuf.size());
+        char key[512];
+        snprintf(
+            key,
+            512,
+            "monitor.servers.%s",
+            m_aggStats.hostname.c_str());
+ 
+        Message m(key, sbuf.data(), sbuf.size());
         m.send(m_publisher);
     }
 
@@ -168,7 +175,14 @@ public:
         msgpack::sbuffer sbuf;
         msgpack::pack(sbuf, m_aggStats);
 
-        Message m("monitor_data", sbuf.data(), sbuf.size());
+        char key[512];
+        snprintf(
+            key,
+            512,
+            "monitor.servers.%s",
+            m_aggStats.hostname.c_str());
+ 
+        Message m(key, sbuf.data(), sbuf.size());
         m.send(m_publisher);
     }
 

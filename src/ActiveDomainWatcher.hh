@@ -40,7 +40,9 @@ public:
         int num_domains = virConnectNumOfDomains(m_conn);
 
         // should have at least a domain 0
-        assert(num_domains > 0);
+        // TODO: actually, with KVM/QEMU as the hypervisor, dom0 is not
+        // reported by libvirt
+        ///assert(num_domains > 0);
 
         DomainSet domains_this_update;
         int *hv_active_domains = new int[num_domains];

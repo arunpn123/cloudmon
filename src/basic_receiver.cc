@@ -25,17 +25,21 @@ int main()
 
     signal(SIGINT, handle_interrupt);
 
-    void *context = zmq_ctx_new();
-    void *subscriber = zmq_socket(context, ZMQ_SUB);
+    void * context = zmq_ctx_new();
+    void * subscriber = zmq_socket(context, ZMQ_SUB);
     int rc = zmq_bind(subscriber, "tcp://*:12345");
     assert(rc == 0);
 
-    //TODO: debugging only...
-    void *publisher = zmq_socket(context, ZMQ_PUB);
+    // setup a relay to republish every message received
+    // this allows other clients to connect to a stable component
+    // to receive monitored data
+    void * publisher = zmq_socket(context, ZMQ_PUB);
     zmq_bind(publisher, "tcp://*:12346");
+    // allow other threads within this process to see the data as well
+    zmq_bind(publisher, "inproc://monitor");
 
-    //const char *filter = "domain_stats";
-    const char *filter = "monitor_data";
+    // receive data from all physical nodes
+    const char * filter = "monitor.servers.";
     rc = zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, filter, strlen(filter));
     assert(rc == 0);
 
@@ -46,7 +50,7 @@ int main()
             Message next;
             next.receive(subscriber);
 
-            //TODO: debugging only...
+            // republish this message via our relay socket
             next.send(publisher);
 
             msgpack::unpacked msg;
