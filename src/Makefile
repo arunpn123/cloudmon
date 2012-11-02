@@ -2,6 +2,11 @@ ZMQ_PATH = ../external/zeromq-install
 CZMQ_PATH = ../external/czmq-install
 MSGPACK_PATH = ../external/msgpack-install
 
+DEBUG =
+#DEBUG = -ggdb -O0
+
+CFLAGS = $(DEBUG)
+
 CPPFLAGS = \
  -I$(ZMQ_PATH)/include \
  -I$(CZMQ_PATH)/include \

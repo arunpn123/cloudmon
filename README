@@ -1,3 +1,22 @@
+2nd Prototype Build - 10/30/2012
+
+To get the code and compile:
+    git clone [source_repo]  (i assume you've already done this)
+    cd external
+    make
+    cd ../src
+    make
+
+To run the monitor daemon:
+    sudo ./run_basic_monitor.sh tcp://localhost:12345
+
+To run the collector daemon:
+    ./run_basic_receiver.sh
+
+
+-------------------------------
+
+
 1st Prototype Build - 10/7/2012
 
 Prototype application for monitoring very basic performance statistics (CPU and memory utilization)
