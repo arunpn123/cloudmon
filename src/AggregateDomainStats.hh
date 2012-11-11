@@ -1,7 +1,6 @@
 #ifndef __AGGREGATE_DOMAIN_STATS_HH__
 #define __AGGREGATE_DOMAIN_STATS_HH__
 
-#include <libvirt/libvirt.h>
 #include <msgpack.hpp>
 #include <vector>
 
