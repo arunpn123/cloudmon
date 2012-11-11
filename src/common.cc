@@ -1,7 +1,11 @@
 #include "common.hh"
 
+#include <sys/stat.h>
+
+#include <string>
 #include <iostream>
 #include <iomanip>
+#include <stdexcept>
 
 void print_aggregate_stats(const AggregateDomainStats & agg)
 {
@@ -54,6 +58,70 @@ void print_carbon_update_lines(const AggregateDomainStats & agg)
             stat_key, dom.mem_utilization_pct, agg.tov);
 
         std::cout << line << std::endl;
+    }
+}
+
+void pubsub_topic_to_path(std::string & key)
+{
+    for(std::string::iterator it = key.begin();
+        it != key.end();
+        ++it)
+    {
+        if(*it == '.')
+            *it = '/';
+    }
+}
+
+//
+// really crappy (and probably insecure) substitute for "mkdir -p" because I
+// am too lazy to install Boost.Filesystem
+//
+
+// return the path components of a topic
+// this is the equivalent of: dirname $(key.replace('.', '/'))
+std::list<std::string> pubsub_topic_to_path_components(const std::string & key)
+{
+    std::list<std::string> out;
+    
+    std::string cur;
+    for(std::string::const_iterator it = key.begin();
+        it != key.end();
+        ++it)
+    {
+        if(*it == '.')
+        {
+            cur += '/';
+            out.push_back(cur);
+        }
+        else
+            cur += *it;
+    }
+
+    return out;
+}
+
+void create_directories_from_pubsub_key(const std::string & key)
+{
+    std::list<std::string> paths = pubsub_topic_to_path_components(key);
+    for(std::list<std::string>::const_iterator p = paths.begin();
+        p != paths.end();
+        ++p)
+    {
+        const char * path = p->c_str();
+        std::cout << "create directory: " << path << "\n";
+
+        struct stat sb;
+        if(stat(path, &sb) == 0 && S_ISDIR(sb.st_mode))
+            continue; // directory already exists
+        else
+        {
+            int rc = mkdir(path, 0755);
+            if(rc != 0)
+            {
+                perror("mkdir");
+                throw std::runtime_error("unable to create directory: " + *p);
+            }
+        }
     }
 }
 

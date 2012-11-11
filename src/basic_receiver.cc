@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 bool g_done;
 
@@ -38,10 +39,17 @@ int main()
     // allow other threads within this process to see the data as well
     zmq_bind(publisher, "inproc://monitor");
 
+    std::vector<std::string> filters;
     // receive data from all physical nodes
-    const char * filter = "monitor.servers.";
-    rc = zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, filter, strlen(filter));
-    assert(rc == 0);
+    filters.push_back("monitor.servers.");
+    // watch for instance termination messages
+    filters.push_back("monitor.term_instance");
+    
+    for(int i = 0; i < filters.size(); i++)
+    {
+        rc = zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, filters[i].c_str(), filters[i].length());
+        assert(rc == 0);
+    }
 
     while(!g_done)
     {
@@ -49,18 +57,31 @@ int main()
         {
             Message next;
             next.receive(subscriber);
-
+            
             // republish this message via our relay socket
             next.send(publisher);
 
-            msgpack::unpacked msg;
-            msgpack::unpack(&msg, next.data, next.data_len);
+            if(next.key == "monitor.term_instance")
+            {
+                msgpack::unpacked msg;
+                msgpack::unpack(&msg, next.data, next.data_len);
 
-            AggregateDomainStats stats;
-            msg.get().convert(&stats);
+                std::string which_instance;
+                msg.get().convert(&which_instance);
 
-            //print_aggregate_stats(stats);
-            print_carbon_update_lines(stats);
+                std::cout << "instance terminated: " << which_instance << "\n";
+            }
+            else
+            {
+                msgpack::unpacked msg;
+                msgpack::unpack(&msg, next.data, next.data_len);
+
+                AggregateDomainStats stats;
+                msg.get().convert(&stats);
+
+                //print_aggregate_stats(stats);
+                print_carbon_update_lines(stats);
+            }
         }
         catch(std::exception & e)
         {

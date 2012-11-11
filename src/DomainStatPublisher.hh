@@ -208,6 +208,18 @@ public:
             return;
         }
 
+        // send a message indicating that this domain has terminated
+        std::string term_instance_ident = 
+            "servers." +
+            m_aggStats.hostname + "." +
+            m_trackers[domID]->domainUUID();
+
+        msgpack::sbuffer sbuf;
+        msgpack::pack(sbuf, term_instance_ident);
+
+        Message m("monitor.term_instance", sbuf.data(), sbuf.size());
+        m.send(m_publisher);
+
         if(m_trackers[domID])
         {
             delete m_trackers[domID];

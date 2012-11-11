@@ -13,6 +13,11 @@ public:
 
     DomainStats update();
 
+    unsigned int domainID() const
+    { return m_domainID; }
+    std::string domainUUID() const
+    { return m_domainUUID; }
+
 protected:
     // @todo: use shared_ptr?
     unsigned int m_domainID;
