@@ -4,6 +4,7 @@
 #include <zmq.h>
 #include <cstring> // for memcpy
 #include <cassert>
+#include <stdint.h>
 #include <string>
 #include <stdexcept>
 
