@@ -1,3 +1,4 @@
+#include "WhisperUpdater.hh"
 #include "AggregateDomainStats.hh"
 #include "my_zhelpers.h"
 #include "Message.hh"
@@ -18,6 +19,16 @@ void handle_interrupt(int signum)
 {
     std::cout << "terminating on signal " << signum << std::endl;
     g_done = true;
+}
+
+void * whisper_updater_thread(void * arg)
+{
+    WhisperRRDProxy * proxy = reinterpret_cast<WhisperRRDProxy *>(arg);
+    assert(proxy);
+
+    proxy->run();
+
+    return 0;
 }
 
 int main()
@@ -50,6 +61,12 @@ int main()
         rc = zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, filters[i].c_str(), filters[i].length());
         assert(rc == 0);
     }
+
+    // setup proxy thread which will handle writing data to whisper dbs
+    WhisperRRDProxy db_updater(context, "/opt/openstack_extra/monitor_data");
+
+    pthread_t updater_tid;
+    pthread_create(&updater_tid, 0, &whisper_updater_thread, &db_updater);
 
     while(!g_done)
     {
@@ -89,6 +106,10 @@ int main()
             g_done = true;
         }
     }
+
+    std::cout << "waiting for DB updater thread to terminate\n";
+    db_updater.terminate();
+    pthread_join(updater_tid, NULL);
 
     std::cout << "shutting down\n";
 
