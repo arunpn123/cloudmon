@@ -18,8 +18,6 @@ class Updater(object):
     def __init__(self, data_dir):
         self.root = data_dir
 
-        print "updater: root is %s" % self.root
-
     def terminate_instance(which_instance):
         pass
 
@@ -31,7 +29,6 @@ class Updater(object):
         if not os.path.exists(metric):
             # create this database
             mkdirs(os.path.dirname(metric))
-            print "creating %s" % metric
             whisper.create(metric, [(METRIC_SEC_PER_POINT, METRIC_POINTS_TO_STORE)])
 
         value = float(data[0])
@@ -51,9 +48,7 @@ class Updater(object):
             which_instance = rest
             self.terminate_instance(which_instance)
         elif key.startswith('monitor.servers.'):
-            print "update!"
             path = '/'.join(key.split('.')[1:])
-            print "path=%s, rest=%s" % (path, str(rest))
             self.update(path, rest)
 
 
@@ -79,7 +74,6 @@ def main(argv):
         if not line:
             break
         line = line.strip()
-        print "received: %s" % line
         updater.process_cmd(line)
 
 

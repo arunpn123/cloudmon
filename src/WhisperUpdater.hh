@@ -1,6 +1,7 @@
 #ifndef __RRD_PROXY_HH__
 #define __RRD_PROXY_HH__
 
+#include "common.hh"
 #include "Message.hh"
 
 #include <zmq.h>
@@ -99,15 +100,20 @@ protected:
                 Message next;
                 next.receive(sock);
 
-                // just forward this to our python script
                 msgpack::unpacked msg;
                 msgpack::unpack(&msg, next.data, next.data_len);
 
-                std::string val;
-                msg.get().convert(&val);
+                AggregateDomainStats agg;
+                msg.get().convert(&agg);
 
-                fprintf(m_updater, "%s %s\n", next.key.c_str(), val.c_str());
-                fflush(m_updater);
+                std::list<std::string> updates = get_whisper_updates(agg);
+                for(std::list<std::string>::const_iterator it = updates.begin();
+                    it != updates.end();
+                    ++it)
+                {
+                    fprintf(m_updater, "%s\n", it->c_str());
+                    fflush(m_updater);
+                }
             }
         }
 

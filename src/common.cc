@@ -2,6 +2,7 @@
 
 #include <sys/stat.h>
 
+#include <list>
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -20,6 +21,49 @@ void print_aggregate_stats(const AggregateDomainStats & agg)
                   << "mem: " << this_dom.mem_utilization_pct*100 << "%"
                   << std::endl;
     }
+}
+
+std::list<std::string> get_whisper_updates(const AggregateDomainStats & agg)
+{
+    std::list<std::string> out;
+
+    for(int i = 0; i < agg.domain_stats.size(); ++i)
+    {
+        const DomainStats & dom = agg.domain_stats[i];
+
+        char stat_key[512];
+        char line[1024];
+        
+        snprintf(
+            stat_key,
+            512,
+            "monitor.servers.%s.%s.cpu",
+            agg.hostname.c_str(),
+            dom.domain_uuid.c_str());
+        snprintf(
+            line,
+            1024,
+            "%s %f %f",
+            stat_key, dom.cpu_utilization_pct, agg.tov);
+
+        out.push_back(line);
+
+        snprintf(
+            stat_key,
+            512,
+            "monitor.servers.%s.%s.mem",
+            agg.hostname.c_str(),
+            dom.domain_uuid.c_str());
+        snprintf(
+            line,
+            1024,
+            "%s %f %f",
+            stat_key, dom.mem_utilization_pct, agg.tov);
+
+        out.push_back(line);
+    }
+
+    return out;
 }
 
 void print_carbon_update_lines(const AggregateDomainStats & agg)
