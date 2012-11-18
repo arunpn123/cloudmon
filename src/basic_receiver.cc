@@ -63,7 +63,7 @@ int main()
     }
 
     // setup proxy thread which will handle writing data to whisper dbs
-    WhisperRRDProxy db_updater(context, "/opt/openstack_extra/monitor_data");
+    WhisperRRDProxy db_updater(context, "/opt/openstack_extra");
 
     pthread_t updater_tid;
     pthread_create(&updater_tid, 0, &whisper_updater_thread, &db_updater);

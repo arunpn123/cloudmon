@@ -42,10 +42,12 @@ class WhisperRRDProxy
 public:
     WhisperRRDProxy(
         void * zmq_context,
-        const std::string & rrd_data_path)
+        const std::string & basepath)
         : m_context(zmq_context),
-          m_rrd_data_path(rrd_data_path),
+          m_basepath(basepath),
           m_shutdown(false),
+          m_updater_path(basepath + "/utils/whisper_updater.sh"),
+          m_rrd_data_path(basepath + "/monitor_data"),
           m_updater(NULL)
     { }
 
@@ -60,7 +62,9 @@ public:
 
     void run()
     {
-        m_updater = popen("./whisper_updater.py", "w");
+        std::string cmd = m_updater_path + " --data-dir " + m_rrd_data_path;
+
+        m_updater = popen(cmd.c_str(), "w");
         if(!m_updater)
         {
             perror("popen");
@@ -111,6 +115,8 @@ protected:
     }
 
     void * m_context;
+    std::string m_basepath;
+    std::string m_updater_path;
     std::string m_rrd_data_path;
     bool m_shutdown;
     FILE * m_updater;
