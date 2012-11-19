@@ -103,16 +103,29 @@ protected:
                 msgpack::unpacked msg;
                 msgpack::unpack(&msg, next.data, next.data_len);
 
-                AggregateDomainStats agg;
-                msg.get().convert(&agg);
-
-                std::list<std::string> updates = get_whisper_updates(agg);
-                for(std::list<std::string>::const_iterator it = updates.begin();
-                    it != updates.end();
-                    ++it)
+                if(next.key == "monitor.term_instance")
                 {
-                    fprintf(m_updater, "%s\n", it->c_str());
-                    fflush(m_updater);
+                    std::string which_instance;
+                    msg.get().convert(&which_instance);
+
+                    fprintf(
+                        m_updater,
+                        "%s %s\n",
+                        next.key.c_str(), which_instance.c_str());
+                }
+                else
+                {
+                    AggregateDomainStats agg;
+                    msg.get().convert(&agg);
+
+                    std::list<std::string> updates = get_whisper_updates(agg);
+                    for(std::list<std::string>::const_iterator it = updates.begin();
+                        it != updates.end();
+                        ++it)
+                    {
+                        fprintf(m_updater, "%s\n", it->c_str());
+                        fflush(m_updater);
+                    }
                 }
             }
         }
