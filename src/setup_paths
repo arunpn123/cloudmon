@@ -3,5 +3,6 @@
 export MONITOR_BASE=$PWD/..
 export ZMQ=$MONITOR_BASE/external/zeromq-install
 export MSGPACK=$MONITOR_BASE/external/msgpack-install
+export MXML=$MONITOR_BASE/external/mxml-install
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ZMQ/lib:$MSGPACK/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ZMQ/lib:$MSGPACK/lib:$MXML/lib

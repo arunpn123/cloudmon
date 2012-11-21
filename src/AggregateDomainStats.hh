@@ -15,8 +15,14 @@ struct DomainStats
     int domain_id;
     double cpu_utilization_pct;
     double mem_utilization_pct;
+    long long disk_read_req;
+    long long disk_write_req;
+    long long disk_read_size; //in Bytes
+    long long disk_write_size; //in Bytes
+    long long disk_errors;
 
-    MSGPACK_DEFINE(domain_id, cpu_utilization_pct, mem_utilization_pct);
+    MSGPACK_DEFINE(domain_id, cpu_utilization_pct, mem_utilization_pct, disk_read_req, disk_write_req, disk_read_size, disk_write_size, disk_errors);
+
 };
 
 struct AggregateDomainStats

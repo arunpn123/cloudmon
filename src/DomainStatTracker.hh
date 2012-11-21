@@ -21,6 +21,12 @@ protected:
     // this saves a malloc on call to update()
     virDomainInfoPtr m_tmpInfo;
     timespec m_last_tov;
+
+    virDomainBlockInfoPtr m_blockinfo;
+    virDomainInterfaceStatsPtr m_interfaceinfo;
+    virDomainBlockStatsPtr m_blockstats;
+    virDomainBlockStatsPtr m_lastblockstats;
+//    virDomainBlockStatsPtr m_tmpblockstats;
 //    DomainStats m_stats;
 };
 

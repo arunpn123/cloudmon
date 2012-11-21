@@ -1,6 +1,7 @@
 ZMQ_PATH = ../external/zeromq-install
 CZMQ_PATH = ../external/czmq-install
 MSGPACK_PATH = ../external/msgpack-install
+MXML_PATH= ../external/mxml-install
 
 DEBUG =
 #DEBUG = -ggdb -O0
@@ -10,14 +11,16 @@ CFLAGS = $(DEBUG)
 CPPFLAGS = \
  -I$(ZMQ_PATH)/include \
  -I$(CZMQ_PATH)/include \
- -I$(MSGPACK_PATH)/include
+ -I$(MSGPACK_PATH)/include\
+ -I$(MXML_PATH)/include
 
 LDFLAGS = \
  -L$(ZMQ_PATH)/lib \
  -L$(CZMQ_PATH)/lib \
- -L$(MSGPACK_PATH)/lib
+ -L$(MSGPACK_PATH)/lib\
+ -L$(MXML_PATH)/lib
 
-COMMON_LIBS = -lrt -lzmq -lmsgpack
+COMMON_LIBS = -lrt -lzmq -lmsgpack -lmxml
 MONITOR_LIBS = $(COMMON_LIBS) -lvirt
 RECEIVER_LIBS = $(COMMON_LIBS)
 
