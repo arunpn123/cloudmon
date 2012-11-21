@@ -1,0 +1,37 @@
+{% extends 'nova/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Monitor" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Monitor") %}
+{% endblock page_header %}
+
+{% block dash_main %}
+<div class="row-fluid">
+    <div class="span12">
+        {{ tab_group.render }}
+    </div>
+</div>
+
+{% comment %}
+{% for instance_id, val in data %}
+    <b>{{ instance_id }}:  cpu={{ val }}</b>
+{% endfor %}
+{% endcomment %}
+
+{% comment %}
+    {% for db in data %}
+        <b>{{ db.name }}</b>
+        <table>
+            {% for item in db.items %}
+                <tr>
+                    <td>{{ item.time }}</td>
+                    <td>{{ item.value }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+{% endcomment %}
+{% endblock %}
+
+

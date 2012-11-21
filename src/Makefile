@@ -20,8 +20,8 @@ LDFLAGS = \
  -L$(MSGPACK_PATH)/lib\
  -L$(MXML_PATH)/lib
 
-COMMON_LIBS = -lrt -lzmq -lmsgpack -lmxml
-MONITOR_LIBS = $(COMMON_LIBS) -lvirt
+COMMON_LIBS = -lrt -lzmq -lmsgpack
+MONITOR_LIBS = $(COMMON_LIBS) -lvirt -lmxml
 RECEIVER_LIBS = $(COMMON_LIBS)
 
 all: basic_monitor basic_receiver eat_memory

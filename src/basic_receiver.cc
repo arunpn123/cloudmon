@@ -77,7 +77,7 @@ int main()
             
             // republish this message via our relay socket
             next.send(publisher);
-
+            /**
             if(next.key == "monitor.term_instance")
             {
                 msgpack::unpacked msg;
@@ -99,6 +99,7 @@ int main()
                 //print_aggregate_stats(stats);
                 print_carbon_update_lines(stats);
             }
+            **/
         }
         catch(std::exception & e)
         {
