@@ -18,8 +18,8 @@ class Updater(object):
     def __init__(self, data_dir):
         self.root = data_dir
 
-    def terminate_instance(which_instance):
-        pass
+    def terminate_instance(self, which_instance):
+        print "instance terminated: %s" % str(which_instance)
 
     def update(self, metric, dataline):
         data = dataline.split()

@@ -8,6 +8,17 @@
 // (only mem and cpu utilization % for now) at a given time
 struct DomainStats
 {
+    DomainStats() :
+        domain_id(-1),
+        cpu_utilization_pct(0),
+        mem_utilization_pct(0),
+        disk_read_req(0),
+        disk_write_req(0),
+        disk_read_size(0),
+        disk_write_size(0),
+        disk_errors(0)
+    { }
+
     // currently, time of validity is only stored at the 
     // aggregate level (e.g. not here, see AggregateDomainStats)
     // this loses precision, but simplifies "batching" a set of updates
