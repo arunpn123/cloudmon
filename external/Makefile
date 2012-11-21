@@ -9,8 +9,24 @@ MSGPACK_VERSION = 0.5.7
 MSGPACK_SRC = msgpack-$(MSGPACK_VERSION).tar.gz
 MSGPACK_SRC_URL = http://msgpack.org/releases/cpp/$(MSGPACK_SRC)
 
+MXML_VERSION = 2.7
+MXML_SRC = mxml-2.7.tar.gz
+MXML_SRC_URL = http://ftp.easysw.com/pub/mxml/$(MXML_VERSION)/$(MXML_SRC)
+
 all: external
-external: zeromq msgpack
+external: zeromq msgpack mxml
+
+mxml:
+	if [ ! -e $(MXML_SRC) ]; then \
+            wget $(MXML_SRC_URL); \
+        fi; \
+	if [ ! -e $(PWD)/mxml-install/lib/libmxml.so ]; then \
+            tar xvzf mxml-$(MXML_VERSION).tar.gz; \
+            cd mxml-$(MXML_VERSION); \
+            ./configure --prefix=$(PWD)/mxml-install; \
+            make; \
+            make install; \
+        fi
 
 msgpack:
 	if [ ! -e $(MSGPACK_SRC) ]; then \

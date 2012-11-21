@@ -1,6 +1,8 @@
 #include "DomainStatTracker.hh"
 #include <iostream>
 #include <stdexcept>
+#include <stdio.h>
+#include <mxml.h>
 
 DomainStatTracker::DomainStatTracker(
         virConnectPtr conn,
@@ -22,6 +24,11 @@ DomainStatTracker::DomainStatTracker(
     m_domainInfo = new virDomainInfo;
     m_tmpInfo = new virDomainInfo;
 
+    // m_blockinfo = new virDomainBlockInfo;
+    m_interfaceinfo = new virDomainInterfaceStatsStruct;
+    m_blockstats = new virDomainBlockStatsStruct;
+    m_lastblockstats = new virDomainBlockStatsStruct;
+
     std::cout << "DomainStatTracker: monitoring domain ID "
               << m_domainID
               << " (" << m_domainUUID << ")\n";
@@ -35,6 +42,12 @@ DomainStatTracker::~DomainStatTracker()
         delete m_domainInfo;
     if(m_tmpInfo)
         delete m_tmpInfo;
+    if(m_blockstats)
+        delete m_blockstats;
+    if(m_lastblockstats)
+        delete m_lastblockstats;
+    if(m_interfaceinfo)
+        delete m_interfaceinfo;
 }
 
 DomainStats DomainStatTracker::update()
@@ -44,15 +57,41 @@ DomainStats DomainStatTracker::update()
     out.domain_uuid = m_domainUUID;
 
     //virDomainInfoPtr cur_info = new virDomainInfo;
+    if(m_domainID==0) 
+       return out;    
+   
     virDomainGetInfo(m_domain, m_tmpInfo);
-
+ 
     timespec prev_tov = m_last_tov;
     m_last_tov = timespec_utils::realtime_now();
+
+    //getting disk stats   
+    //parsing domain xml using mxml
+    const char* diskpath;
+    int success;
+    mxml_node_t *xmltree;
+    mxml_node_t *xmldisknode1, *xmldisknode2;
+    char * domainxml;
+    domainxml = virDomainGetXMLDesc(m_domain, 0);
+    xmltree= mxmlLoadString(NULL, domainxml,MXML_TEXT_CALLBACK);
+    // xmldisknode1= mxmlFindElement(xmltree, xmltree,"disk","type","block", MXML_DESCEND);
+    xmldisknode2= mxmlFindElement(xmltree, xmltree, "target", NULL, NULL, MXML_DESCEND);
+    diskpath= mxmlElementGetAttr(xmldisknode2,"dev");
+    success= virDomainBlockStats(m_domain, diskpath, m_blockstats, sizeof(m_blockstats));
+    if(success==-1)
+        std::cout<<"blockstats api error"<<std::endl;
+
 
     if(!m_domainInfo)
     {
         // dont have a previous update yet (this is the first)
         *m_domainInfo = *m_tmpInfo;
+        m_lastblockstats->rd_req= m_blockstats->rd_req;
+        m_lastblockstats->wr_req= m_blockstats->wr_req ;
+        m_lastblockstats->rd_bytes= m_blockstats->rd_bytes;
+        m_lastblockstats->wr_bytes= m_blockstats->wr_bytes;
+        m_lastblockstats->errs= m_blockstats->errs;
+
         // @todo: out uninitialized here :(
         return out;
     }
@@ -77,7 +116,25 @@ DomainStats DomainStatTracker::update()
     //          << " Mem util: " << mem_util_pct*100 << "%\n";
 
     *m_domainInfo = *m_tmpInfo;
+    
 
+    out.disk_read_req= m_blockstats->rd_req - m_lastblockstats->rd_req;
+    out.disk_write_req= m_blockstats->wr_req - m_lastblockstats->wr_req;
+    out.disk_read_size= m_blockstats->rd_bytes - m_lastblockstats->rd_bytes;
+    out.disk_write_size= m_blockstats->wr_bytes - m_lastblockstats->wr_bytes;
+    out.disk_errors= m_blockstats->errs - m_lastblockstats->errs;
+    free(domainxml);
+
+    *m_lastblockstats = *m_blockstats;
+   
+  
+   //network interface stats
+//   const char* interfacepath= "vif<domainid>.0";
+    char interfacepath[64];
+    snprintf(interfacepath, 64, "vif%d.0", m_domainID);
+    success= virDomainInterfaceStats(m_domain, interfacepath, m_interfaceinfo, sizeof(m_interfaceinfo));
+    if(success== -1)
+        std::cout<<"Interface stats api Error"<<std::endl;
     return out;
 }
 
