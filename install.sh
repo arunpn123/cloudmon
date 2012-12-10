@@ -32,6 +32,7 @@ install -m 755 bin/monitor $PREFIX/bin
 install -m 755 bin/collector $PREFIX/bin
 install -m 755 bin/basic_monitor $PREFIX/bin
 install -m 755 bin/basic_receiver $PREFIX/bin
+install -m 755 bin/sm_ctl $PREFIX/bin
 
 echo "install lib"
 cp -pdr lib/* $PREFIX/lib
