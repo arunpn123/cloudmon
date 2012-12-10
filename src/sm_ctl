@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import signal
+
+_collector_pidfile = "/opt/openstack_extra/run/collector.pid"
+_collector_path = "/opt/openstack_extra/bin/collector"
+_monitor_pidfile = "/opt/openstack_extra/run/monitor.pid"
+_monitor_path = "/opt/openstack_extra/bin/monitor"
+
+def readpid(pidfile):
+    pid = -1
+    try:
+        with open(pidfile, 'r') as f:
+            pid = int(f.read())
+    except OSError:
+        pass
+    return pid
+
+
+def get_pidfile(which):
+    pidfiles = {'monitor': _monitor_pidfile, 'collector': _collector_pidfile}
+    return pidfiles[which]
+
+
+def get_path(which):
+    paths = {'monitor': _monitor_path, 'collector': _collector_path}
+    return paths[which]
+
+
+def get_args(whicih):
+    args = {'monitor': ['tcp://jedi000:12345'], 'collector': []}
+    return args[which]
+
+
+def start(which):
+    pidfile = get_pidfile(which)
+    if os.path.exists(pidfile):
+        pid = readpid(pidfile)
+        raise RuntimeError("%s appears to be already running (pid %d) -- use 'stop' first" % (which, pid))
+
+    pid = os.fork()
+    if pid == 0:
+        cmd = get_path(which)
+        sys.stdin.close()
+        sys.stdout.close()
+        sys.stderr.close()
+        os.execvp(cmd, [cmd] + get_args(which))
+    else:
+        with open(pidfile, 'w') as f:
+            f.write(str(pid))
+        print "started %s [pid %d]" % (which, pid)
+
+
+def stop(which):
+    pidfile = get_pidfile(which)
+    if not os.path.exists(pidfile):
+        raise RuntimeError("%s does not appear to be running (try 'pkill'?)" % which)
+
+    pid = readpid(pidfile)
+    if pid == -1:
+        raise RuntimeError("error: can't find collector pid (try 'pkill'?)")
+
+    os.kill(pid, signal.SIGINT)
+    print "shutting down %s (pid %d)" % (which, pid)
+    os.unlink(pidfile)
+
+
+if __name__ == '__main__':
+    if len(sys.argv[1:]) < 2:
+        print "usage: %s [monitor|collector] [start|stop]" % sys.argv[0]
+        sys.exit(1)
+
+    which = sys.argv[1]
+    if not which in ['monitor', 'collector']:
+        raise RuntimeError("invalid program: %s" % which)
+
+    cmd = sys.argv[2]
+    if cmd == 'start':
+        start(which)
+    elif cmd == 'stop':
+        stop(which)
+    else:
+        raise RuntimeError("invalid command: %s" % cmd)
+

@@ -14,7 +14,7 @@ cat > bin/monitor << EOF
 #!/bin/bash
 
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$PREFIX/lib
-$PREFIX/bin/basic_monitor \$*
+exec $PREFIX/bin/basic_monitor \$*
 
 EOF
 
@@ -22,7 +22,7 @@ cat > bin/collector << EOF
 #!/bin/bash
 
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$PREFIX/lib
-$PREFIX/bin/basic_receiver \$*
+exec $PREFIX/bin/basic_receiver \$*
 
 EOF
 

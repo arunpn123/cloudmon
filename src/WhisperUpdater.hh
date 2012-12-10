@@ -76,6 +76,34 @@ public:
         run_proxy_loop();
     }
 
+    void update_immediate(const std::string & key, msgpack::unpacked msg)
+    {
+        if(key == "monitor.term_instance")
+        {
+            std::string which_instance;
+            msg.get().convert(&which_instance);
+
+            fprintf(
+                m_updater,
+                "%s %s\n",
+                key.c_str(), which_instance.c_str());
+        }
+        else
+        {
+            AggregateDomainStats agg;
+            msg.get().convert(&agg);
+
+            std::list<std::string> updates = get_whisper_updates(agg);
+            for(std::list<std::string>::const_iterator it = updates.begin();
+                it != updates.end();
+                ++it)
+            {
+                fprintf(m_updater, "%s\n", it->c_str());
+                fflush(m_updater);
+            }
+        }
+    }
+
 protected:
     void run_proxy_loop()
     {
@@ -87,7 +115,11 @@ protected:
         const char * term_filter = "monitor.term_instance";
         zmq_setsockopt(sock, ZMQ_SUBSCRIBE, term_filter, strlen(term_filter));
 
-        zmq_connect(sock, "inproc://monitor");
+        int linger = 0;
+        zmq_setsockopt(sock, ZMQ_LINGER, &linger, sizeof(int));
+
+//        zmq_connect(sock, "inproc://monitor");
+        zmq_connect(sock, "tcp://localhost:12346");
 
         zmq_pollitem_t pollitems = { sock, 0, ZMQ_POLLIN, 0 };
 
@@ -103,30 +135,7 @@ protected:
                 msgpack::unpacked msg;
                 msgpack::unpack(&msg, next.data, next.data_len);
 
-                if(next.key == "monitor.term_instance")
-                {
-                    std::string which_instance;
-                    msg.get().convert(&which_instance);
-
-                    fprintf(
-                        m_updater,
-                        "%s %s\n",
-                        next.key.c_str(), which_instance.c_str());
-                }
-                else
-                {
-                    AggregateDomainStats agg;
-                    msg.get().convert(&agg);
-
-                    std::list<std::string> updates = get_whisper_updates(agg);
-                    for(std::list<std::string>::const_iterator it = updates.begin();
-                        it != updates.end();
-                        ++it)
-                    {
-                        fprintf(m_updater, "%s\n", it->c_str());
-                        fflush(m_updater);
-                    }
-                }
+                update_immediate(next.key, msg);
             }
         }
 

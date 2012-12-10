@@ -35,7 +35,7 @@ int main()
 {
     g_done = false;
 
-    signal(SIGINT, handle_interrupt);
+//    signal(SIGINT, handle_interrupt);
 
     void * context = zmq_ctx_new();
     void * subscriber = zmq_socket(context, ZMQ_SUB);

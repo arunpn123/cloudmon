@@ -61,6 +61,35 @@ std::list<std::string> get_whisper_updates(const AggregateDomainStats & agg)
             stat_key, dom.mem_utilization_pct, agg.tov);
 
         out.push_back(line);
+
+        snprintf(
+            stat_key,
+            512,
+            "monitor.servers.%s.%s.disk_read_req",
+            agg.hostname.c_str(),
+            dom.domain_uuid.c_str());
+        snprintf(
+            line,
+            1024,
+            "%s %lld %f",
+            stat_key, dom.disk_read_req, agg.tov);
+
+        out.push_back(line);
+
+        snprintf(
+            stat_key,
+            512,
+            "monitor.servers.%s.%s.disk_write_req",
+            agg.hostname.c_str(),
+            dom.domain_uuid.c_str());
+        snprintf(
+            line,
+            1024,
+            "%s %lld %f",
+            stat_key, dom.disk_write_req, agg.tov);
+        
+        out.push_back(line);
+
     }
 
     return out;

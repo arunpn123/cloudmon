@@ -60,7 +60,10 @@ struct Message
         int rc = zmq_msg_recv(&msg_key, sock, 0);
         
         if(rc == -1)
+        {
+            zmq_msg_close(&msg_key);
             throw MessageReceiveError("error receiving msg_key");
+        }
 
         size_t size = zmq_msg_size(&msg_key);
         char * buf = new char[size + 1];
@@ -82,7 +85,10 @@ struct Message
         rc = zmq_msg_recv(&msg_data, sock, 0);
         
         if(rc == -1)
+        {
             throw MessageReceiveError("error receiving msg_data");
+            zmq_msg_close(&msg_data);
+        }
 
         size = zmq_msg_size(&msg_data);
         data = new char[size];
