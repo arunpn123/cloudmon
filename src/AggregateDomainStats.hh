@@ -16,7 +16,15 @@ struct DomainStats
         disk_write_req(0),
         disk_read_size(0),
         disk_write_size(0),
-        disk_errors(0)
+        disk_errors(0),
+        rx_bytes(0),
+        rx_packets(0),
+        rx_errs(0),
+        rx_drop(0),
+        tx_bytes(0),
+        tx_packets(0),
+        tx_errs(0),
+        tx_drop(0)
     { }
 
     // currently, time of validity is only stored at the 
@@ -36,6 +44,14 @@ struct DomainStats
     long long disk_read_size; //in Bytes
     long long disk_write_size; //in Bytes
     long long disk_errors;
+    long long rx_bytes;
+    long long rx_packets;
+    long long rx_errs;
+    long long rx_drop;
+    long long tx_bytes;
+    long long tx_packets;
+    long long tx_errs;
+    long long tx_drop;
 
     MSGPACK_DEFINE(
         domain_id, 
@@ -46,7 +62,15 @@ struct DomainStats
         disk_write_req, 
         disk_read_size, 
         disk_write_size, 
-        disk_errors);
+        disk_errors,
+        rx_bytes,
+        rx_packets,
+        rx_errs,
+        rx_drop,
+        tx_bytes,
+        tx_packets,
+        tx_errs,
+        tx_drop);
 };
 
 struct AggregateDomainStats

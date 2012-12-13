@@ -30,6 +30,7 @@ protected:
 
     virDomainBlockInfoPtr m_blockinfo;
     virDomainInterfaceStatsPtr m_interfaceinfo;
+    virDomainInterfaceStatsPtr m_lastinterfaceinfo;
     virDomainBlockStatsPtr m_blockstats;
     virDomainBlockStatsPtr m_lastblockstats;
 //    virDomainBlockStatsPtr m_tmpblockstats;
