@@ -133,8 +133,8 @@ DomainStats DomainStatTracker::update()
     char interfacepath[64];
     snprintf(interfacepath, 64, "vif%d.0", m_domainID);
     success= virDomainInterfaceStats(m_domain, interfacepath, m_interfaceinfo, sizeof(m_interfaceinfo));
-    if(success== -1)
-        std::cout<<"Interface stats api Error"<<std::endl;
+//    if(success== -1)
+//        std::cout<<"Interface stats api Error"<<std::endl;
     return out;
 }
 
