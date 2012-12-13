@@ -26,6 +26,7 @@ DomainStatTracker::DomainStatTracker(
 
     // m_blockinfo = new virDomainBlockInfo;
     m_interfaceinfo = new virDomainInterfaceStatsStruct;
+    m_lastinterfaceinfo = new virDomainInterfaceStatsStruct;
     m_blockstats = new virDomainBlockStatsStruct;
     m_lastblockstats = new virDomainBlockStatsStruct;
 
@@ -48,6 +49,8 @@ DomainStatTracker::~DomainStatTracker()
         delete m_lastblockstats;
     if(m_interfaceinfo)
         delete m_interfaceinfo;
+    if(m_lastinterfaceinfo)
+	delete m_lastinterfaceinfo;
 }
 
 DomainStats DomainStatTracker::update()
@@ -91,7 +94,7 @@ DomainStats DomainStatTracker::update()
         m_lastblockstats->rd_bytes= m_blockstats->rd_bytes;
         m_lastblockstats->wr_bytes= m_blockstats->wr_bytes;
         m_lastblockstats->errs= m_blockstats->errs;
-
+        *m_lastinterfaceinfo = *m_interfaceinfo;
         // @todo: out uninitialized here :(
         return out;
     }
@@ -135,6 +138,18 @@ DomainStats DomainStatTracker::update()
     success= virDomainInterfaceStats(m_domain, interfacepath, m_interfaceinfo, sizeof(m_interfaceinfo));
     if(success== -1)
         std::cout<<"Interface stats api Error"<<std::endl;
+    
+    out.rx_bytes= m_interfaceinfo->rx_bytes - m_lastinterfaceinfo->rx_bytes;
+    out.rx_packets = m_interfaceinfo->rx_packets - m_lastinterfaceinfo->rx_packets;
+    out.rx_errs = m_interfaceinfo->rx_errs - m_lastinterfaceinfo->rx_errs;
+    out.rx_drop = m_interfaceinfo->rx_drop - m_lastinterfaceinfo->rx_drop;
+    out.tx_bytes= m_interfaceinfo->tx_bytes - m_lastinterfaceinfo->tx_bytes;
+    out.tx_packets = m_interfaceinfo->tx_packets - m_lastinterfaceinfo->tx_packets;
+    out.tx_errs = m_interfaceinfo->tx_errs - m_lastinterfaceinfo->tx_errs;
+    out.tx_drop = m_interfaceinfo->tx_drop - m_lastinterfaceinfo->tx_drop;
+
+    std::cout<<"rx_bytes"<<out.rx_bytes<<std::endl;
+    *m_lastinterfaceinfo = *m_interfaceinfo;    
     return out;
 }
 
